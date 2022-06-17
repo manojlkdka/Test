@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <template t-name="account_dynamic_reports.internal_layout_pl_extra">
+        <t t-if="not o" t-set="o" t-value="doc"/>
+
+        <t t-if="not company">
+            <!-- Multicompany -->
+            <t t-if="company_id">
+                <t t-set="company" t-value="company_id"/>
+            </t>
+            <t t-elif="o and 'company_id' in o and o.company_id.sudo()">
+                <t t-set="company" t-value="o.company_id.sudo()"/>
+            </t>
+            <t t-else="else">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+        </t>
+
+        <div class="header">
+            <div class="row">
+                 <div class="col-2">
+                    <!-- <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/> -->
+                </div> 
+                <div class="col-5 offset-1 text-center">
+                    <strong><span t-esc="company.name"/></strong>
+                    <span t-esc="company.street"/>,
+                    <span t-esc="company.street2"/>,
+                    <span t-esc="company.phone"/>
+                </div>
+                <!-- <div class="col-1 offset-3 text-right">
+                    <ul class="list-inline">
+                        <li class="list-inline-item"><span class="page"/></li>
+                        <li class="list-inline-item">/</li>
+                        <li class="list-inline-item"><span class="topage"/></li>
+                    </ul>
+                </div> -->
+            </div>
+            <div style="border-bottom:1px solid black;"></div>
+
+        </div>
+        <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+          <t t-raw="0"/>
+        </div>
+    </template>
+
+    <template id="account_dynamic_reports.partner_ledger">
+        <t t-call="web.html_container">
+            <t t-call="account_dynamic_reports.internal_layout_pl_extra">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <style>
+                        .pims_report_content{
+                            font-size: 14px;
+                            font-family" 'Arial';
+                        }
+
+                        .pims_report_line_table {
+                            width:100%;
+                        }
+
+                        .pims_report_line_main_tr {
+                            font-weight:bold;
+                            font-size: 14px;
+                            font-family" 'Arial';
+                            border-bottom:1px solid grey;
+                        }
+
+                        .pims_report_line_initial_tr {
+                            font-style:italic;
+                        }
+
+                        .pims_report_line_data_tr {
+                            font-style:inherit;
+                        }
+
+                        .pims_report_line_subtotal {
+                            font-weight:bold;
+                            background-color: white;
+                            border:1px solid grey;
+                        }
+                    </style>
+                    <br/><br/>
+                    <div>
+                        
+
+                        <div class="row pims_report_content">
+                            <div class="col-3" style="width:25%;float:left">
+                                <strong>E.Date From:</strong>
+                                <p t-esc="Filters['date_from']" t-options='{"widget": "date"}'></p>
+                            </div>
+                            <div class="col-3" style="width:25%;float:left">
+                                <strong>E.Date To:</strong>
+                                <p t-esc="Filters['date_to']" t-options='{"widget": "date"}'></p>
+                            </div>
+                            <div class="col-3" style="width:25%;float:left">
+                                <strong>N.Date From:</strong>
+                                <p t-esc="Filters['date_from_pl']" ></p>
+                                
+                            </div>
+                            <div class="col-3" style="width:25%;float:left">
+                                <strong>N.Date To:</strong>
+                                <p t-esc="Filters['date_to_pl']" ></p>
+                                
+                            </div>
+
+                        </div>
+            <div style="border-bottom:1px solid black"></div>
+
+                        <br></br>
+                        <table class="pims_report_line_table pims_report_content">
+                            <thead>
+                                <t t-if="not Filters['include_details']">
+                                    <tr class="text-center">
+                                        <th colspan="5" class="text-center">Partner</th>
+                                        <th style="text-align:right;padding-bottom:10px;">Debit</th>
+                                        <th style="text-align:right">Credit</th>
+                                        <th style="text-align:right">Balance</th>
+                                    </tr>
+                                </t>
+                                <t t-if="Filters['include_details']">
+                                    <tr class="text-center">
+                                        <th style="text-align:left;">Date</th>
+                                        <th style="text-align:left;">Journal</th>
+                                        <th style="text-align:left;">Account</th>
+                                        <th style="text-align:left;">Move</th>
+                                        <th style="text-align:left;">Reference</th>
+                                        <th style="text-align:right;padding-bottom:10px;">Debit</th>
+                                        <th style="text-align:right">Credit</th>
+                                        <th style="text-align:right">Balance</th>
+                                    </tr>
+                                </t>
+                            </thead>
+                            <t t-foreach="Ledger_data" t-as="line">
+                                <tr class="pims_report_line_main_tr">
+                                    <td colspan="5">
+                                        <span style="color: white;" t-esc="'..'"/>
+                                        <span t-esc="Ledger_data[line]['name']"/>
+                                    </td>
+                                    <t t-if="Ledger_data[line]['debit']">
+                                        <td class="text-right">
+                                            <span t-esc="Ledger_data[line]['debit']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                    </t><t t-else=""><td class="text-center">-</td></t>
+                                    <t t-if="Ledger_data[line]['credit']">
+                                        <td class="text-right">
+                                            <span t-esc="Ledger_data[line]['credit']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                    </t><t t-else=""><td class="text-center">-</td></t>
+                                    <t t-if="Ledger_data[line]['balance']">
+                                        <td class="text-right">
+                                            <span t-esc="Ledger_data[line]['balance']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                    </t><t t-else=""><td class="text-center">-</td></t>
+                                </tr>
+
+                                <t t-foreach="Ledger_data[line]['lines']" t-as="sub_line">
+                                    <t t-if="sub_line['initial_bal']">
+                                        <tr class="pims_report_line_initial_tr">
+                                            <td colspan="5" class="text-right">
+                                                <span>Initial Balance</span>
+                                            </td>
+                                            <t t-if="sub_line['debit']">
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['debit']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </t><t t-else=""><td class="text-center">-</td></t>
+                                            <t t-if="sub_line['credit']">
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['credit']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </t><t t-else=""><td class="text-center">-</td></t>
+                                            <t t-if="sub_line['balance']">
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['balance']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </t><t t-else=""><td class="text-center">-</td></t>
+                                        </tr>
+                                    </t>
+                                    <t t-if="Filters['include_details']">
+                                        <t t-if="not sub_line['initial_bal'] and not sub_line['ending_bal']">
+                                            <tr class="pims_report_line_data_tr">
+                                                <td><t t-esc="sub_line.get('ldate')" t-options='{"widget": "date"}'/></td>
+                                                <td><t t-esc="sub_line.get('lcode')"/></td>
+                                                <td><t t-esc="sub_line.get('account_name')"/></td>
+                                                <td><t t-esc="sub_line.get('move_name')"/></td>
+                                                <td style="width:30%;"><t t-esc="sub_line.get('lname')"/></td>
+                                                <t t-if="sub_line.get('debit')">
+                                                    <td class="text-right"><t t-esc="sub_line.get('debit')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                                </t><t t-else=""><td class="text-center">-</td></t>
+                                                <t t-if="sub_line.get('credit')">
+                                                    <td class="text-right"><t t-esc="sub_line.get('credit')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                                </t><t t-else=""><td class="text-center">-</td></t>
+                                                <t t-if="sub_line.get('balance')">
+                                                    <td class="text-right"><t t-esc="sub_line.get('balance')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                                </t><t t-else=""><td class="text-center">-</td></t>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                    <t t-if="sub_line['ending_bal']">
+                                        <tr class="pims_report_line_initial_tr">
+                                            <td colspan="5" class="text-right">
+                                                <span>Ending Balance</span>
+                                            </td>
+                                            <t t-if="sub_line['debit']">
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['debit']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </t><t t-else=""><td class="text-center">-</td></t>
+                                            <t t-if="sub_line['credit']">
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['credit']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </t><t t-else=""><td class="text-center">-</td></t>
+                                            <t t-if="sub_line['balance']">
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['balance']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </t><t t-else=""><td class="text-center">-</td></t>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </t>
+                        </table>
+                    </div>
+                    <br></br>
+                    <div style="margin-top:20px">
+                            <div style="float:left;width:33.33%;text-align:center">
+                                <p> .............................</p>
+                                <p>Prepared By</p>
+                            </div>
+                             <div style="float:left;width:33.33%;text-align:center">
+                                <p> .............................</p>
+                                <p>Stamp</p>
+                            </div>
+                            <div style="float:left;width:33.33%;text-align:center">
+                                <p> .............................</p>
+                                <p>Approved By</p>
+                            </div>
+  					</div>
+                </div>
+           </t>
+        </t>
+    </template>
+
+    <report id="action_print_partner_ledger"
+        model="ins.partner.ledger"
+        report_type="qweb-pdf"
+        menu="False"
+        string="Partner Ledger"
+        name="account_dynamic_reports.partner_ledger"
+        file="account_dynamic_reports.partner_ledger"
+    />
+</odoo>
